@@ -11,9 +11,7 @@ st.set_page_config(
 # ENV + IMPORTS
 # =========================
 import os
-os.environ["THINC_OPS"] = "numpy"
 
-import spacy
 from youtube_videos2 import YouTubeExtractor
 from medical_finder import NearbyMedicalFinder
 
@@ -21,23 +19,6 @@ import folium
 from streamlit_folium import st_folium
 import requests
 from get_coordinates import get_device_coordinates
-# =========================
-# LOAD spaCy SAFELY
-# =========================
-@st.cache_resource
-def load_spacy_model():
-    return spacy.load("en_ner_bc5cdr_md")
-
-sci_nlp = load_spacy_model()
-print("✅ Medical NLP model loaded successfully.")
-# =========================
-# UTILS
-# =========================
-def process_text(text: str) -> bool:
-    if not text or len(text) > 100:
-        return False
-    doc = sci_nlp(text)
-    return any(ent.label_ == "DISEASE" for ent in doc.ents)
 
 # Add network connectivity check function
 def check_network_connectivity():
@@ -201,12 +182,6 @@ symptoms = search_col.text_input(
     placeholder="Type your symptoms here..."
 )
 
-
-if not process_text(symptoms):
-        st.warning("Sorry, We could not detect any medical keywords. We request you to be a bit more specific 🙁")
-        symptoms = ""
-        # st.session_state.cached_videos = []
-
 #////////////////////////////////////////
 # GPS Button Locking
 if "gps_locked" not in st.session_state:
@@ -275,6 +250,10 @@ if search_clicked or symptoms:
                     st.session_state.cached_keywords = yt_keywords
                     st.session_state.cached_medical_keywords = medical_keywords
                     st.session_state.last_query = symptoms
+                
+                if not yt_keywords and not medical_keywords:
+                    st.warning("Sorry, We could not detect any medical keywords. We request you to be a bit more specific 🙁")
+                    symptoms = ""
           
             except requests.exceptions.SSLError:
                 st.error("🔒 **SSL Connection Issue** 😅")

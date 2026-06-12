@@ -18,7 +18,8 @@ class YouTubeExtractor:
 
     User symptoms: {user_symptoms}
 
-    Return TWO lists in JSON format:
+    If the user symptoms are NOT related to any medical condition, are nonsensical, or are spam, you MUST return empty lists for both.
+    Otherwise, return TWO lists in JSON format:
     1. YOUTUBE_KEYWORDS (8-12): "chest pain management", "cardiac care awareness"
     2. MEDICAL_KEYWORDS assuming you are a medical search assistant for Google Places API (5-8): "cardiologist", "cardiac clinic", "heart hospital"
 
@@ -47,6 +48,9 @@ class YouTubeExtractor:
         youtube_keywords = keyword_data.get("youtube_keywords", [])
         medical_keywords = keyword_data.get("medical_keywords", [])
         
+        if not youtube_keywords and not medical_keywords:
+            return [], [], []
+
         print(f"🎯 YouTube: {' | '.join(youtube_keywords[:5])}")
         print(f"🏥 Medical: {' | '.join(medical_keywords[:5])}")
         
